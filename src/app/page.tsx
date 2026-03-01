@@ -109,7 +109,12 @@ export default function HomePage() {
           <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] px-4 py-3 backdrop-blur-2xl">
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[rgba(0,102,255,0.22)] via-transparent to-[rgba(120,196,255,0.14)] opacity-75" />
             <div className="relative flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
+              <a
+                href="https://brightdata.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3"
+              >
                 <img
                   src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/brightdata.svg`}
                   alt="Bright Data"
@@ -121,7 +126,7 @@ export default function HomePage() {
                   alt="Convex"
                   className="h-12 w-auto brightness-0 invert"
                 />
-              </div>
+              </a>
               <div className="flex flex-wrap items-center gap-2">
                 <Link
                   href="/dashboard"
