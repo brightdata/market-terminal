@@ -1,5 +1,3 @@
-type AIProvider = 'openai' | 'openrouter';
-
 function envString(name: string, fallback = ''): string {
   const v = process.env[name];
   return typeof v === 'string' ? v : fallback;
@@ -9,11 +7,6 @@ function envBool(name: string, fallback = false): boolean {
   const v = envString(name);
   if (!v) return fallback;
   return v.toLowerCase() === 'true' || v === '1' || v.toLowerCase() === 'yes';
-}
-
-function pickProvider(raw: string): AIProvider {
-  const v = raw.toLowerCase();
-  return v === 'openrouter' ? 'openrouter' : 'openai';
 }
 
 export const env = {
@@ -31,31 +24,11 @@ export const env = {
     browserAuth: envString('BRIGHTDATA_BROWSER_AUTH') || envString('BROWSER_AUTH'),
   },
   ai: {
-    provider: pickProvider(envString('AI_PROVIDER', 'openai')),
     allowClientApiKeys: envBool('ALLOW_CLIENT_API_KEYS', false),
-    openai: {
-      apiKey: envString('OPENAI_API_KEY'),
-      baseURL: envString('OPENAI_BASE_URL', 'https://api.openai.com/v1'),
-      model: envString('OPENAI_MODEL', 'gpt-4o-mini'),
-      modelFast: envString('OPENAI_MODEL_FAST', ''),
-      modelDeep: envString('OPENAI_MODEL_DEEP', ''),
-      modelPlan: envString('OPENAI_MODEL_PLAN', ''),
-      modelPlanFast: envString('OPENAI_MODEL_PLAN_FAST', ''),
-      modelPlanDeep: envString('OPENAI_MODEL_PLAN_DEEP', ''),
-      modelArtifacts: envString('OPENAI_MODEL_ARTIFACTS', ''),
-      modelArtifactsFast: envString('OPENAI_MODEL_ARTIFACTS_FAST', ''),
-      modelArtifactsDeep: envString('OPENAI_MODEL_ARTIFACTS_DEEP', ''),
-      modelChat: envString('OPENAI_MODEL_CHAT', ''),
-      modelChatFast: envString('OPENAI_MODEL_CHAT_FAST', ''),
-      modelChatDeep: envString('OPENAI_MODEL_CHAT_DEEP', ''),
-      modelSummaries: envString('OPENAI_MODEL_SUMMARIES', ''),
-      modelSummariesFast: envString('OPENAI_MODEL_SUMMARIES_FAST', ''),
-      modelSummariesDeep: envString('OPENAI_MODEL_SUMMARIES_DEEP', ''),
-    },
     openrouter: {
       apiKey: envString('OPENROUTER_API_KEY'),
       baseURL: envString('OPENROUTER_BASE_URL', 'https://openrouter.ai/api/v1'),
-      model: envString('OPENROUTER_MODEL', 'openai/gpt-4o-mini'),
+      model: envString('OPENROUTER_MODEL', 'google/gemini-3-flash-preview'),
       modelFast: envString('OPENROUTER_MODEL_FAST', ''),
       modelDeep: envString('OPENROUTER_MODEL_DEEP', ''),
       modelPlan: envString('OPENROUTER_MODEL_PLAN', ''),

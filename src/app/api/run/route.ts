@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { env, hasBrightData, hasConvex } from '@/lib/env';
-import { getAIConfig, chatJson, type AIProvider } from '@/lib/ai';
+import { getAIConfig, chatJson } from '@/lib/ai';
 import { brightDataRequestMarkdown, brightDataSerpGoogle, type SerpResult } from '@/lib/brightdata';
 import { getConvexClient, api } from '@/lib/convex/server';
 import { createLogger } from '@/lib/log';
@@ -71,7 +71,7 @@ const RunRequestSchema = z.object({
   question: z.string().optional(),
   mode: z.enum(['fast', 'deep']).optional().default('fast'),
   serpFormat: z.enum(['light', 'full', 'markdown']).optional(),
-  provider: z.enum(['openai', 'openrouter']).optional(),
+  provider: z.enum(['openrouter']).optional(),
   model: z.string().optional(),
   apiKey: z.string().optional(),
 });
@@ -1389,18 +1389,15 @@ function normalizeArtifactsPayload(raw: unknown): unknown {
 async function planQueries({
   topic,
   question,
-  provider,
   model,
   apiKey,
   onAiUsage,
 }: {
   topic: string;
   question?: string;
-  provider: AIProvider;
   model?: string;
   apiKey?: string;
   onAiUsage?: (u: {
-    provider: AIProvider;
     model: string;
     tag?: string;
     prompt_tokens?: number;
@@ -1424,11 +1421,8 @@ async function planQueries({
   const canUseClientKey = env.ai.allowClientApiKeys;
   const keyOverride = canUseClientKey ? apiKey : undefined;
 
-  const stageModel =
-    provider === 'openrouter'
-      ? env.ai.openrouter.modelPlan
-      : env.ai.openai.modelPlan;
-  const config = getAIConfig({ provider, apiKeyOverride: keyOverride, modelOverride: model || stageModel || undefined });
+  const stageModel = env.ai.openrouter.modelPlan;
+  const config = getAIConfig({ apiKeyOverride: keyOverride, modelOverride: model || stageModel || undefined });
   if (!config) {
     return fallbackPlan('no_ai_config');
   }
@@ -1553,18 +1547,15 @@ const EvidenceSummariesSchema = z.object({
 async function summarizeEvidence({
   topic,
   evidence,
-  provider,
   model,
   apiKey,
   onAiUsage,
 }: {
   topic: string;
   evidence: EvidenceItem[];
-  provider: AIProvider;
   model?: string;
   apiKey?: string;
   onAiUsage?: (u: {
-    provider: AIProvider;
     model: string;
     tag?: string;
     prompt_tokens?: number;
@@ -1574,11 +1565,8 @@ async function summarizeEvidence({
 }): Promise<EvidenceItem[]> {
   if (!evidence.length) return evidence;
 
-  const stageModel =
-    provider === 'openrouter'
-      ? env.ai.openrouter.modelSummaries
-      : env.ai.openai.modelSummaries;
-  const config = getAIConfig({ provider, apiKeyOverride: apiKey, modelOverride: model || stageModel || undefined });
+  const stageModel = env.ai.openrouter.modelSummaries;
+  const config = getAIConfig({ apiKeyOverride: apiKey, modelOverride: model || stageModel || undefined });
   if (!config) return evidence;
 
   const top = evidence.slice(0, 10).map((e) => ({
@@ -1628,7 +1616,6 @@ async function buildArtifacts({
   topic,
   evidence,
   mode,
-  provider,
   model,
   apiKey,
   onAiUsage,
@@ -1636,11 +1623,9 @@ async function buildArtifacts({
   topic: string;
   evidence: EvidenceItem[];
   mode: 'fast' | 'deep';
-  provider: AIProvider;
   model?: string;
   apiKey?: string;
   onAiUsage?: (u: {
-    provider: AIProvider;
     model: string;
     tag?: string;
     prompt_tokens?: number;
@@ -1658,11 +1643,8 @@ async function buildArtifacts({
 }> {
   const canUseClientKey = env.ai.allowClientApiKeys;
   const keyOverride = canUseClientKey ? apiKey : undefined;
-  const stageModel =
-    provider === 'openrouter'
-      ? env.ai.openrouter.modelArtifacts
-      : env.ai.openai.modelArtifacts;
-  const config = getAIConfig({ provider, apiKeyOverride: keyOverride, modelOverride: model || stageModel || undefined });
+  const stageModel = env.ai.openrouter.modelArtifacts;
+  const config = getAIConfig({ apiKeyOverride: keyOverride, modelOverride: model || stageModel || undefined });
   const startedAt = Date.now();
 
   if (!config) {
@@ -1714,7 +1696,7 @@ async function buildArtifacts({
     return {
       usedAI: false,
       fallbackReason: 'no_ai_config',
-      assistantMessage: `No AI key configured. Set OPENAI_API_KEY or OPENROUTER_API_KEY (or enable ALLOW_CLIENT_API_KEYS) to generate live artifacts.`,
+      assistantMessage: `No AI key configured. Set OPENROUTER_API_KEY (or enable ALLOW_CLIENT_API_KEYS) to generate live artifacts.`,
       tape: baseTape,
       nodes: coherent.nodes,
       edges: coherent.edges,
@@ -2030,7 +2012,6 @@ async function expandGraphImpact({
   evidence,
   nodes,
   edges,
-  provider,
   model,
   apiKey,
   onAiUsage,
@@ -2040,11 +2021,9 @@ async function expandGraphImpact({
   evidence: EvidenceItem[];
   nodes: GraphNode[];
   edges: GraphEdge[];
-  provider: AIProvider;
   model?: string;
   apiKey?: string;
   onAiUsage?: (u: {
-    provider: AIProvider;
     model: string;
     tag?: string;
     prompt_tokens?: number;
@@ -2056,11 +2035,8 @@ async function expandGraphImpact({
 
   const canUseClientKey = env.ai.allowClientApiKeys;
   const keyOverride = canUseClientKey ? apiKey : undefined;
-  const stageModel =
-    provider === 'openrouter'
-      ? env.ai.openrouter.modelArtifacts
-      : env.ai.openai.modelArtifacts;
-  const config = getAIConfig({ provider, apiKeyOverride: keyOverride, modelOverride: model || stageModel || undefined });
+  const stageModel = env.ai.openrouter.modelArtifacts;
+  const config = getAIConfig({ apiKeyOverride: keyOverride, modelOverride: model || stageModel || undefined });
   if (!config) return null;
 
   const evidenceCompact = evidence.slice(0, 12).map((e) => ({
@@ -2170,7 +2146,7 @@ export async function POST(request: Request) {
   }
 
   const sessionId = crypto.randomUUID();
-  const provider: AIProvider = (body.provider as AIProvider | undefined) || env.ai.provider;
+  const provider = 'openrouter' as const;
   const signal = request.signal;
   const serpFormat = body.serpFormat || 'light';
 
@@ -2233,7 +2209,6 @@ export async function POST(request: Request) {
       };
 
       const emitAiUsage = (u: {
-        provider: AIProvider;
         model: string;
         tag?: string;
         prompt_tokens?: number;
@@ -2242,7 +2217,6 @@ export async function POST(request: Request) {
       }) => {
         // Keep it safe for storage: no prompt content, just counters.
         const payload = {
-          provider: u.provider,
           model: u.model,
           tag: u.tag || 'ai',
           prompt_tokens: u.prompt_tokens ?? 0,
@@ -2402,7 +2376,6 @@ export async function POST(request: Request) {
         await emitStep('plan', 0.08);
 
         const planModel = selectStageModel({
-          provider,
           stage: 'plan',
           mode: body.mode,
           requestedModel: body.model,
@@ -2413,7 +2386,6 @@ export async function POST(request: Request) {
           planQueries({
             topic: body.topic,
             question: body.question,
-            provider,
             model: planModel,
             apiKey: body.apiKey,
             onAiUsage: emitAiUsage,
@@ -2638,7 +2610,6 @@ export async function POST(request: Request) {
         let evidenceWithSummaries = evidence;
         if (body.mode === 'deep') {
           const summariesModel = selectStageModel({
-            provider,
             stage: 'summaries',
             mode: body.mode,
             requestedModel: body.model,
@@ -2651,7 +2622,6 @@ export async function POST(request: Request) {
             summarizeEvidence({
               topic: body.topic,
               evidence,
-              provider,
               model: summariesModel,
               apiKey: body.apiKey,
               onAiUsage: emitAiUsage,
@@ -2676,7 +2646,6 @@ export async function POST(request: Request) {
         await emitStep('link', 0.72);
 
         const artifactsModel = selectStageModel({
-          provider,
           stage: 'artifacts',
           mode: body.mode,
           requestedModel: body.model,
@@ -2691,7 +2660,6 @@ export async function POST(request: Request) {
             topic: body.topic,
             evidence: evidenceWithSummaries,
             mode: body.mode,
-            provider,
             model: artifactsModel,
             apiKey: body.apiKey,
             onAiUsage: emitAiUsage,
@@ -2744,7 +2712,6 @@ export async function POST(request: Request) {
               evidence: evidenceWithSummaries,
               nodes: artifacts.nodes,
               edges: artifacts.edges,
-              provider,
               model: artifactsModel,
               apiKey: body.apiKey,
               onAiUsage: emitAiUsage,

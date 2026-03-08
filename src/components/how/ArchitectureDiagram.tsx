@@ -66,7 +66,7 @@ export function ArchitectureDiagram({ className }: { className?: string }) {
         />
         <Arrow />
         <Box
-          title="AI planner (OpenAI)"
+          title="AI planner (OpenRouter)"
           subtitle="Generates search angles and coverage constraints (recency, macro, catalysts)."
           icon={<Sparkles className="h-5 w-5" />}
           tone="teal"

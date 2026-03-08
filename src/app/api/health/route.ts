@@ -75,8 +75,7 @@ async function probeBrightDataSerp() {
 }
 
 async function probeAI() {
-  const provider = env.ai.provider;
-  const cfg = getAIConfig({ provider });
+  const cfg = getAIConfig();
   if (!cfg) return { ok: false, error: 'missing-key' as const };
 
   const startedAt = Date.now();
@@ -97,7 +96,6 @@ async function probeAI() {
     ok: Boolean(content),
     latencyMs,
     model: cfg.model,
-    provider: cfg.provider,
     sample: content.slice(0, 40),
   };
 }
@@ -144,10 +142,8 @@ export async function GET(request: Request) {
         serpZone: brightDataSerpZone(),
       },
       ai: {
-        provider: env.ai.provider,
-        configured: Boolean(getAIConfig({ provider: env.ai.provider })),
-        model:
-          env.ai.provider === 'openrouter' ? env.ai.openrouter.model : env.ai.openai.model,
+        configured: Boolean(getAIConfig()),
+        model: env.ai.openrouter.model,
         allowClientApiKeys: env.ai.allowClientApiKeys,
       },
       convex: {

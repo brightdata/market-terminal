@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { env } from '@/lib/env';
-import { createAIClient, getAIConfig, type AIProvider } from '@/lib/ai';
+import { createAIClient, getAIConfig } from '@/lib/ai';
 import { getConvexClient, api } from '@/lib/convex/server';
 import { createLogger } from '@/lib/log';
 import { selectStageModel } from '@/lib/modelRouting';
@@ -29,10 +28,6 @@ function safeErrorText(err: unknown, max = 220) {
   return truncateText(raw, max);
 }
 
-function pickProvider(raw: string): AIProvider {
-  return raw === 'openrouter' ? 'openrouter' : 'openai';
-}
-
 export async function POST(request: Request) {
   const reqId = crypto.randomUUID();
   const log = createLogger({ reqId, route: '/api/chat' });
@@ -54,8 +49,6 @@ export async function POST(request: Request) {
     );
   }
 
-  const provider = pickProvider(env.ai.provider);
-
   const sessionRow = await convex.query(api.sessions.get, { sessionId: body.sessionId });
   if (!sessionRow) {
     log.warn('chat.session_not_found', { sessionId: body.sessionId });
@@ -65,11 +58,10 @@ export async function POST(request: Request) {
   const meta = (sessionRow as any).meta || {};
   const sessionMode: 'fast' | 'deep' = meta?.mode === 'deep' ? 'deep' : 'fast';
   const chatModel = selectStageModel({
-    provider,
     stage: 'chat',
     mode: sessionMode,
   });
-  const cfg = getAIConfig({ provider, modelOverride: chatModel || undefined });
+  const cfg = getAIConfig({ modelOverride: chatModel || undefined });
   if (!cfg) {
     return NextResponse.json({ error: 'AI not configured (missing key).' }, { status: 503 });
   }
@@ -154,7 +146,6 @@ export async function POST(request: Request) {
     log.error('chat.ai_failed', {
       sessionId: body.sessionId,
       ms: Date.now() - startedAt,
-      provider: cfg.provider,
       model: cfg.model,
       error: message,
     });
@@ -187,7 +178,6 @@ export async function POST(request: Request) {
         sessionId: body.sessionId,
         type: 'ai.usage',
         payload: {
-          provider: cfg.provider,
           model: cfg.model,
           tag: 'chat',
           prompt_tokens: usage.prompt_tokens ?? 0,
@@ -215,7 +205,6 @@ export async function POST(request: Request) {
       ok: Boolean(content),
       content,
       usage: {
-        provider: cfg.provider,
         model: cfg.model,
         prompt_tokens: usage.prompt_tokens ?? 0,
         completion_tokens: usage.completion_tokens ?? 0,

@@ -1371,7 +1371,7 @@ export function Terminal() {
 
       setRunMeta({
         mode: meta.mode === 'deep' ? 'deep' : 'fast',
-        provider: typeof meta.provider === 'string' ? meta.provider : 'openai',
+        provider: typeof meta.provider === 'string' ? meta.provider : 'openrouter',
       });
       setMode(meta.mode === 'deep' ? 'deep' : 'fast');
       setTopic(topic);
@@ -1730,7 +1730,7 @@ export function Terminal() {
       setPlan(null);
       setSearch(null);
       setWarnings([]);
-      setRunMeta({ mode, provider: 'openai' });
+      setRunMeta({ mode, provider: 'openrouter' });
       setQueryQueue([]);
       setScrapeQueue([]);
       setSummariesCount(0);
@@ -1817,7 +1817,7 @@ export function Terminal() {
             if (event === 'session' && data && typeof data === 'object') {
               const d = data as any;
               const serverMode: 'fast' | 'deep' = d.mode === 'deep' ? 'deep' : 'fast';
-              const provider = typeof d.provider === 'string' ? d.provider : 'openai';
+              const provider = typeof d.provider === 'string' ? d.provider : 'openrouter';
               const sessionId = typeof d.sessionId === 'string' ? d.sessionId : localId;
               const serverTopic = typeof d.topic === 'string' ? d.topic : cleaned;
               const serverStartedAt = typeof d.startedAt === 'number' ? d.startedAt : startedAtLocal;

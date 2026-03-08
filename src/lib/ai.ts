@@ -3,10 +3,7 @@ import { z } from 'zod';
 
 import { env } from '@/lib/env';
 
-export type AIProvider = 'openai' | 'openrouter';
-
 export type AIConfig = {
-  provider: AIProvider;
   apiKey: string;
   baseURL: string;
   model: string;
@@ -44,8 +41,8 @@ function stripCodeFence(raw: string): string {
 
 function normalizeJsonQuotes(raw: string): string {
   return String(raw || '')
-    .replace(/[“”]/g, '"')
-    .replace(/[‘’]/g, "'");
+    .replace(/[""]/g, '"')
+    .replace(/['']/g, "'");
 }
 
 function stripUnicodeNoise(raw: string): string {
@@ -311,32 +308,22 @@ function buildValidationCandidates(parsed: unknown): unknown[] {
 }
 
 export function getAIConfig({
-  provider,
   apiKeyOverride,
   modelOverride,
 }: {
-  provider: AIProvider;
   apiKeyOverride?: string;
   modelOverride?: string;
-}): AIConfig | null {
-  const base =
-    provider === 'openrouter'
-      ? {
-          apiKey: env.ai.openrouter.apiKey,
-          baseURL: env.ai.openrouter.baseURL,
-          model: env.ai.openrouter.model,
-        }
-      : {
-          apiKey: env.ai.openai.apiKey,
-          baseURL: env.ai.openai.baseURL,
-          model: env.ai.openai.model,
-        };
+} = {}): AIConfig | null {
+  const base = {
+    apiKey: env.ai.openrouter.apiKey,
+    baseURL: env.ai.openrouter.baseURL,
+    model: env.ai.openrouter.model,
+  };
 
   const apiKey = apiKeyOverride || base.apiKey;
   if (!apiKey) return null;
 
   return {
-    provider,
     apiKey,
     baseURL: base.baseURL,
     model: modelOverride || base.model,
@@ -347,13 +334,10 @@ export function createAIClient(config: AIConfig) {
   return new OpenAI({
     apiKey: config.apiKey,
     baseURL: config.baseURL,
-    defaultHeaders:
-      config.provider === 'openrouter'
-        ? {
-            // Optional but recommended by OpenRouter for analytics.
-            'X-Title': 'Bright Data Signal Terminal',
-          }
-        : undefined,
+    defaultHeaders: {
+      // Optional but recommended by OpenRouter for analytics.
+      'X-Title': 'Bright Data Signal Terminal',
+    },
   });
 }
 
@@ -373,7 +357,6 @@ export async function chatJson<TSchema extends z.ZodTypeAny>({
   telemetry?: {
     tag?: string;
     onUsage?: (u: {
-      provider: AIProvider;
       model: string;
       tag?: string;
       prompt_tokens?: number;
@@ -395,7 +378,6 @@ export async function chatJson<TSchema extends z.ZodTypeAny>({
   });
 
   telemetry?.onUsage?.({
-    provider: config.provider,
     model: config.model,
     tag: telemetry.tag,
     prompt_tokens: (res as any).usage?.prompt_tokens,

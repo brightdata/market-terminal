@@ -1,6 +1,5 @@
 import { env } from '@/lib/env';
 
-type AIProvider = 'openai' | 'openrouter';
 type RunMode = 'fast' | 'deep';
 type ModelStage = 'plan' | 'summaries' | 'artifacts' | 'chat';
 
@@ -60,12 +59,10 @@ function stageModels(profile: ModelProfile, stage: ModelStage) {
 }
 
 export function selectStageModel({
-  provider,
   stage,
   mode,
   requestedModel,
 }: {
-  provider: AIProvider;
   stage: ModelStage;
   mode: RunMode;
   requestedModel?: string;
@@ -74,7 +71,7 @@ export function selectStageModel({
   const explicit = firstNonEmpty(requestedModel);
   if (explicit) return explicit;
 
-  const profile = (provider === 'openrouter' ? env.ai.openrouter : env.ai.openai) as ModelProfile;
+  const profile = env.ai.openrouter as ModelProfile;
   const stageProfile = stageModels(profile, stage);
   const modeFallback = mode === 'fast' ? profile.modelFast : profile.modelDeep;
 

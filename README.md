@@ -69,8 +69,8 @@ No static datasets. No hallucinated sources. Every answer traces back to a scrap
            ▼                 ▼                      ▼
    ┌──────────────┐  ┌──────────────────┐  ┌───────────────┐
    │  Bright Data │  │  LLM             │  │    Convex     │
-   │  SERP +      │  │  OpenAI /        │  │  session DB + │
-   │  Unlocker    │  │  OpenRouter      │  │  event log    │
+   │  SERP +      │  │  OpenRouter      │  │  session DB + │
+   │  Unlocker    │  │  (Gemini 3)      │  │  event log    │
    └──────────────┘  └──────────────────┘  └───────────────┘
 ```
 
@@ -136,7 +136,7 @@ The terminal offers four ways to explore the same underlying data:
 | **Styling** | Tailwind CSS 4 |
 | **Realtime DB** | [Convex](https://convex.dev) — sessions, event log, TTL cleanup |
 | **Web Data** | [Bright Data](https://brightdata.com) — SERP + Web Unlocker |
-| **AI** | OpenAI / OpenRouter (configurable per pipeline stage) |
+| **AI** | [OpenRouter](https://openrouter.ai) — Gemini 3 Flash Preview (configurable per pipeline stage) |
 | **Graph Viz** | `react-force-graph-2d` |
 | **Validation** | Zod |
 | **Icons** | lucide-react |
@@ -196,7 +196,7 @@ market-terminal/
 
 - Node.js 20+
 - A [Bright Data](https://brightdata.com) account with **SERP** and **Web Unlocker** zones configured
-- An [OpenAI](https://platform.openai.com) or [OpenRouter](https://openrouter.ai) API key
+- An [OpenRouter](https://openrouter.ai) API key
 - A [Convex](https://convex.dev) project (free tier works)
 
 ### 1. Install dependencies
@@ -218,10 +218,9 @@ BRIGHTDATA_API_TOKEN=your_token_here
 BRIGHTDATA_WEB_UNLOCKER_ZONE=unblocker
 BRIGHTDATA_SERP_ZONE=serp
 
-# AI — OpenRouter or OpenAI
-AI_PROVIDER=openrouter
+# AI — OpenRouter
 OPENROUTER_API_KEY=sk-or-...
-OPENROUTER_MODEL=google/gemini-2-flash-preview
+OPENROUTER_MODEL=google/gemini-3-flash-preview
 
 # Convex
 CONVEX_DEPLOYMENT=prod:your-deployment-slug
