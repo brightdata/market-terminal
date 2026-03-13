@@ -356,6 +356,10 @@ total          →   ~6.1s
 
 ---
 
+## Resources
+
+- [Building a Live AI Market Research Terminal: How Bright Data and Convex Replace Polling With Real-Time Everything](https://dev.to/sholajegede/building-a-live-ai-market-research-terminal-how-bright-data-and-convex-replace-polling-with-mm) — Full architecture walkthrough covering both Bright Data paths, Convex roles, the reflection stage, and model selection logic.
+
 <div align="center">
 
 <br />
